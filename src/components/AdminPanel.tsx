@@ -1,7 +1,7 @@
 export function AdminPanel() {
   return (
     <div>
-      Admin Panel
+      <h2>Admin Panel</h2>
     </div>
   );
 }
