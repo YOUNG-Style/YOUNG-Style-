@@ -1,7 +1,7 @@
 export function BannerSlider() {
   return (
     <div>
-      Banner Slider
+      <h2>Banner Slider</h2>
     </div>
   );
 }
