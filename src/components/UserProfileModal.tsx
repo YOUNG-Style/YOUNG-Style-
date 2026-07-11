@@ -201,9 +201,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
       
       let nameVal = email.includes('@') ? email.split('@')[0].toUpperCase() : 'Phone User';
       let emailVal = email.includes('@') ? email.toLowerCase() : `${email}@youngstyle.com`;
-      let phoneVal = email.includes('@') ? '01711122233' : email;
-      let addressVal = 'Dhaka, Bangladesh';
-      let districtVal = 'Dhaka';
+      let phoneVal = email.includes('@') ? '' : email;
+      let addressVal = '';
+      let districtVal = '';
       let avatarVal: string | undefined = undefined;
       let loginMethodVal: 'email' | 'phone' | 'google' = email.includes('@') ? 'email' : 'phone';
 
@@ -219,10 +219,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
           avatarVal = data.avatar || undefined;
           loginMethodVal = data.loginMethod || loginMethodVal;
           
-          // Keep password in Firestore synced if updated
-          if (!data.password || data.password !== password) {
-            await setDoc(doc(db, 'users', firebaseEmail.toLowerCase()), { password }, { merge: true });
-          }
         } else {
           // Backward compatibility: create Firestore doc
           await setDoc(doc(db, 'users', firebaseEmail.toLowerCase()), {
@@ -232,7 +228,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
             address: addressVal,
             district: districtVal,
             loginMethod: loginMethodVal,
-            password: password
           });
         }
       } catch (dbErr) {
@@ -248,7 +243,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         isLoggedIn: true,
         loginMethod: loginMethodVal,
         avatar: avatarVal,
-        password: password
       });
       setAuthView('profile');
     } catch (err: any) {
@@ -303,7 +297,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
           district: 'Dhaka',
           avatar: '',
           loginMethod: isEmail ? 'email' : 'phone',
-          password: regPassword
         });
       } catch (dbErr) {
         console.warn("Firestore saving profile warning:", dbErr);
@@ -318,7 +311,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         isLoggedIn: true,
         loginMethod: isEmail ? 'email' : 'phone',
         avatar: undefined,
-        password: regPassword
       });
       setAuthView('profile');
     } catch (err: any) {
