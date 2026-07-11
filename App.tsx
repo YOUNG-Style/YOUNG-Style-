@@ -7,7 +7,6 @@ export default function App() {
         fontFamily: "Arial"
       }}
     >
-      <h1>YOUNG Style Website Working 🎉</h1>
       <p>GitHub Pages Successfully Connected.</p>
     </div>
   );
