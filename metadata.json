@@ -1,0 +1,6 @@
+{
+  "name": "YOUNG Style",
+  "description": "An elegant clothing e-commerce website for shirts and t-shirts with an integrated advanced admin panel, customizable sliders, courier charges, payments, and subscriptions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
