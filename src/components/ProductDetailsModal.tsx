@@ -1,7 +1,7 @@
 export function ProductDetailsModal() {
   return (
     <div>
-      Product Details Modal
+      <h2>Product Details Modal</h2>
     </div>
   );
 }
