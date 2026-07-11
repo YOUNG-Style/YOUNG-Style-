@@ -1,7 +1,7 @@
 export function SidebarMenu() {
   return (
     <div>
-      Sidebar Menu
+      <h2>Sidebar Menu</h2>
     </div>
   );
 }
