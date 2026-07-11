@@ -346,9 +346,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
       
       let nameVal = user.displayName || 'Google User';
       let emailVal = user.email || '';
-      let phoneVal = ';
-      let addressVal = ';
-      let districtVal = ';
+      let phoneVal = 'Please Update';
+      let addressVal = '';
+      let districtVal = '';
       let avatarVal = user.photoURL || undefined;
 
       if (emailVal) {
