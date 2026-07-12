@@ -7,8 +7,6 @@ import {
   googleProvider, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-
-  signInWithRedirect,
   
   signOut, 
   signInWithPopup,
@@ -22,7 +20,8 @@ import {
   EmailAuthProvider, 
   reauthenticateWithCredential, 
 
-  getRedirectResult
+  getRedirectResult,
+  signInWithRedirect
   
 } from 'firebase/auth';
 
