@@ -205,7 +205,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
       
       const user = userCredential.user;
 
-      alert("LOGIN STEP 3");
+      alert("BEFORE FIRESTORE");
       
       
       let nameVal = email.includes('@') ? email.split('@')[0].toUpperCase() : 'Phone User';
@@ -220,7 +220,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         const userDoc = await getDoc(doc(db, 'users', firebaseEmail.toLowerCase()));
         console.timeEnd("Firestore Load");
 
-        alert("LOGIN STEP 4");
+        alert("BEFORE FIRESTORE");
         
         if (userDoc.exists()) {
           const data = userDoc.data();
