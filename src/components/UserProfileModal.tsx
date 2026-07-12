@@ -283,7 +283,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
     try {
       const firebaseEmail = isEmail ? regEmail : resolveLoginEmail(regPhone);
-      await createUserWithEmailAndPassword(auth, firebaseEmail, regPassword);
+      alert("REG STEP 1");
+      const userCredential = await createUserWithEmailAndPassword(
+    auth,
+    firebaseEmail,
+    regPassword
+);
+
+alert("REG STEP 2");
+
+const user = userCredential.user;
+
+alert("REG STEP 3");
       
       const emailValue = isEmail ? regEmail.toLowerCase() : `${regPhone}@youngstyle.com`;
 
@@ -298,6 +309,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
           avatar: '',
           loginMethod: isEmail ? 'email' : 'phone',
         });
+        
+        alert("REG STEP 4");
+        
       } catch (dbErr) {
         console.warn("Firestore saving profile warning:", dbErr);
       }
@@ -312,6 +326,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         loginMethod: isEmail ? 'email' : 'phone',
         avatar: undefined,
       });
+
+      alert("REG STEP 5");
+      
       setAuthView('profile');
     } catch (err: any) {
       console.error(err);
