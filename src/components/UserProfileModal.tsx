@@ -205,7 +205,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
       
       const user = userCredential.user;
 
-      alert("BEFORE FIRESTORE");
+      alert("LOGIN STEP 3");
       
       
       let nameVal = email.includes('@') ? email.split('@')[0].toUpperCase() : 'Phone User';
@@ -217,24 +217,23 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
       let loginMethodVal: 'email' | 'phone' | 'google' = email.includes('@') ? 'email' : 'phone';
 
       try {
-        const userDoc = await getDoc(doc(db, 'users', firebaseEmail.toLowerCase()));
+       // const userDoc = await getDoc(doc(db, 'users', firebaseEmail.toLowerCase()));
         console.timeEnd("Firestore Load");
 
-        alert("BEFORE FIRESTORE");
         
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          nameVal = data.name || nameVal;
-          emailVal = data.email || emailVal;
-          phoneVal = data.phone || phoneVal;
-          addressVal = data.address || addressVal;
-          districtVal = data.district || districtVal;
-          avatarVal = data.avatar || undefined;
-          loginMethodVal = data.loginMethod || loginMethodVal;
+        //if (userDoc.exists()) {
+         // const data = userDoc.data();
+          //nameVal = data.name || nameVal;
+         // emailVal = data.email || emailVal;
+          //phoneVal = data.phone || phoneVal;
+         // addressVal = data.address || addressVal;
+         // districtVal = data.district || districtVal;
+         // avatarVal = data.avatar || undefined;
+         // loginMethodVal = data.loginMethod || loginMethodVal;
           
-        } else {
+        //} else {
           // Backward compatibility: create Firestore doc
-          await setDoc(doc(db, 'users', firebaseEmail.toLowerCase()), {
+         // await setDoc(doc(db, 'users', firebaseEmail.toLowerCase()), {
             name: nameVal,
             email: emailVal,
             phone: phoneVal,
@@ -242,7 +241,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
             district: districtVal,
             loginMethod: loginMethodVal,
           });
-        }
+       // }
       } catch (dbErr) {
         console.warn("Firestore loading profile warning:", dbErr);
       }
