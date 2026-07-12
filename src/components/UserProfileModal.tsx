@@ -234,13 +234,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         //} else {
           // Backward compatibility: create Firestore doc
          // await setDoc(doc(db, 'users', firebaseEmail.toLowerCase()), {
-            name: nameVal,
-            email: emailVal,
-            phone: phoneVal,
-            address: addressVal,
-            district: districtVal,
-            loginMethod: loginMethodVal,
-          });
+           // name: nameVal,
+           // email: emailVal,
+           // phone: phoneVal,
+           // address: addressVal,
+           // district: districtVal,
+           // loginMethod: loginMethodVal,
+         // });
        // }
       } catch (dbErr) {
         console.warn("Firestore loading profile warning:", dbErr);
