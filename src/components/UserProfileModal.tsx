@@ -5,15 +5,11 @@ import { BANGLADESH_DISTRICTS } from '../initialData';
 import { 
   auth, 
   googleProvider, 
-  signInWithRedirect,
-  getRedirectResult,
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   
   signOut, 
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   db,
   doc,
   setDoc,
@@ -69,9 +65,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
   getRedirectResult(auth)
     .then((result) => {
       if (result?.user) {
-        console.log("Google Redirect Login Success");
+        updateUserProfile({
+        name: result.user.displayName || 'Google User',
+        email: result.user.email || '',
+        isLoggedIn: true,
+        loginMethod: 'google',
+        avatar: result.user.photoURL || undefined
+    });
+
+    setAuthView('profile');
       }
-    })
+          })
     .catch((error) => {
       console.error(error);
     });
