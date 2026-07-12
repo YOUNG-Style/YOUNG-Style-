@@ -197,15 +197,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
     try {
       const firebaseEmail = resolveLoginEmail(email);
       
-      alert("LOGIN STEP 1");
       
       const userCredential = await signInWithEmailAndPassword(auth, firebaseEmail, password);
       
-      alert("LOGIN STEP 2");
       
       const user = userCredential.user;
-
-      alert("LOGIN STEP 3");
       
       
       let nameVal = email.includes('@') ? email.split('@')[0].toUpperCase() : 'Phone User';
@@ -257,7 +253,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         avatar: avatarVal,
       });
 
-      alert("LOGIN STEP 5");
       
       setAuthView('profile');
     } catch (err: any) {
