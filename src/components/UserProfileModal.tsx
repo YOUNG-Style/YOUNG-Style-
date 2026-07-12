@@ -300,7 +300,7 @@ alert("REG STEP 3");
 
       try {
         const userRef = doc(db, 'users', firebaseEmail.toLowerCase());
-        await setDoc(userRef, {
+         setDoc(userRef, {
           name: regName,
           email: emailValue,
           phone: regPhone,
