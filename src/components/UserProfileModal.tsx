@@ -5,11 +5,15 @@ import { BANGLADESH_DISTRICTS } from '../initialData';
 import { 
   auth, 
   googleProvider, 
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   
   signOut, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   db,
   doc,
   setDoc,
