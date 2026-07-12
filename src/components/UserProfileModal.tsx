@@ -218,6 +218,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
       try {
         const userDoc = await getDoc(doc(db, 'users', firebaseEmail.toLowerCase()));
+        console.timeEnd("Firestore Load");
 
         alert("LOGIN STEP 4");
         
