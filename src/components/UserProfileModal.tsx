@@ -247,9 +247,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
       }
 
       updateUserProfile({
-        
-        alert("LOGIN STEP 5");
-          
         name: nameVal,
         email: emailVal,
         phone: phoneVal,
@@ -259,6 +256,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
         loginMethod: loginMethodVal,
         avatar: avatarVal,
       });
+
+      alert("LOGIN STEP 5");
+      
       setAuthView('profile');
     } catch (err: any) {
       console.error(err);
