@@ -216,9 +216,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
       let avatarVal: string | undefined = undefined;
       let loginMethodVal: 'email' | 'phone' | 'google' = email.includes('@') ? 'email' : 'phone';
 
-      try {
+     // try {
        // const userDoc = await getDoc(doc(db, 'users', firebaseEmail.toLowerCase()));
-        console.timeEnd("Firestore Load");
+      //  console.timeEnd("Firestore Load");
 
         
         //if (userDoc.exists()) {
@@ -242,9 +242,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
            // loginMethod: loginMethodVal,
          // });
        // }
-      } catch (dbErr) {
-        console.warn("Firestore loading profile warning:", dbErr);
-      }
+     // } catch (dbErr) {
+       // console.warn("Firestore loading profile warning:", dbErr);
+     // }
 
       updateUserProfile({
         name: nameVal,
