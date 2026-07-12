@@ -7,6 +7,9 @@ import {
   googleProvider, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+
+  signInWithRedirect,
+  
   signOut, 
   signInWithPopup,
   db,
@@ -17,7 +20,10 @@ import {
 import { 
   updatePassword, 
   EmailAuthProvider, 
-  reauthenticateWithCredential 
+  reauthenticateWithCredential, 
+
+  getRedirectResult
+  
 } from 'firebase/auth';
 
 interface UserProfileModalProps {
@@ -55,6 +61,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
   // Loading & Error states for Firebase integration
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+  getRedirectResult(auth)
+    .then((result) => {
+      if (result?.user) {
+        console.log("Google Redirect Login Success");
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}, []);
 
   // Password reset inside profile
   const [oldPassword, setOldPassword] = useState('');
@@ -356,6 +374,11 @@ const user = userCredential.user;
     setLoading(true);
     setAuthError(null);
     try {
+          // Mobile device হলে Redirect ব্যবহার করবে
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      await signInWithRedirect(auth, googleProvider);
+      return;
+    }
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       
