@@ -196,8 +196,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
     
     try {
       const firebaseEmail = resolveLoginEmail(email);
+      
+      alert("LOGIN STEP 1");
+      
       const userCredential = await signInWithEmailAndPassword(auth, firebaseEmail, password);
+      
+      alert("LOGIN STEP 2");
+      
       const user = userCredential.user;
+
+      alert("LOGIN STEP 3");
+      
       
       let nameVal = email.includes('@') ? email.split('@')[0].toUpperCase() : 'Phone User';
       let emailVal = email.includes('@') ? email.toLowerCase() : `${email}@youngstyle.com`;
@@ -209,6 +218,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
       try {
         const userDoc = await getDoc(doc(db, 'users', firebaseEmail.toLowerCase()));
+
+        alert("LOGIN STEP 4");
+        
         if (userDoc.exists()) {
           const data = userDoc.data();
           nameVal = data.name || nameVal;
@@ -235,6 +247,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
       }
 
       updateUserProfile({
+        
+        alert("LOGIN STEP 5");
+          
         name: nameVal,
         email: emailVal,
         phone: phoneVal,
@@ -283,18 +298,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
     try {
       const firebaseEmail = isEmail ? regEmail : resolveLoginEmail(regPhone);
-      alert("REG STEP 1");
+  
       const userCredential = await createUserWithEmailAndPassword(
     auth,
     firebaseEmail,
     regPassword
 );
 
-alert("REG STEP 2");
 
 const user = userCredential.user;
 
-alert("REG STEP 3");
       
       const emailValue = isEmail ? regEmail.toLowerCase() : `${regPhone}@youngstyle.com`;
 
@@ -310,7 +323,6 @@ alert("REG STEP 3");
           loginMethod: isEmail ? 'email' : 'phone',
         });
         
-        alert("REG STEP 4");
         
       } catch (dbErr) {
         console.warn("Firestore saving profile warning:", dbErr);
@@ -327,7 +339,6 @@ alert("REG STEP 3");
         avatar: undefined,
       });
 
-      alert("REG STEP 5");
       
       setAuthView('profile');
     } catch (err: any) {
