@@ -436,7 +436,7 @@ const user = userCredential.user;
     } catch (err: any) {
       console.error(err);
       alert(err.code + "\n" + err.message);
-    }
+    
       if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
         setAuthError(
           `গুগল লগইন সম্পন্ন করতে ডোমেইন অথোরাইজেশন প্রয়োজন (auth/unauthorized-domain)।\n\n` +
