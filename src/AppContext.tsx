@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Order, Coupon, Subscriber, WebsiteSettings, SocialMediaLinks, VisitorStats, CourierSettings, PaymentNumbers, UserProfile } from './types';
-import { db } from './firebase';
-import { collection, doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
+import { db, auth } from './firebase';
+import { collection, doc, onSnapshot, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import { 
   INITIAL_PRODUCTS, 
   INITIAL_COUPONS, 
@@ -130,66 +131,19 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // --- Track whether database has been initially seeded ---
   const [dbSeeded, setDbSeeded] = useState<boolean | null>(null);
 
-  // --- Load Initial States from LocalStorage if available ---
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = safeLocalStorage.getItem('ys_products');
-    return safeJsonParse<Product[]>(saved, INITIAL_PRODUCTS);
-  });
-
-  const [categories, setCategories] = useState<string[]>(() => {
-    const saved = safeLocalStorage.getItem('ys_categories');
-    return safeJsonParse<string[]>(saved, ['Trending', 'Shirt', 'T-Shirt', 'All Product']);
-  });
-
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = safeLocalStorage.getItem('ys_orders');
-    return safeJsonParse<Order[]>(saved, []);
-  });
-
-  const [coupons, setCoupons] = useState<Coupon[]>(() => {
-    const saved = safeLocalStorage.getItem('ys_coupons');
-    return safeJsonParse<Coupon[]>(saved, INITIAL_COUPONS);
-  });
-
-  const [subscribers, setSubscribers] = useState<Subscriber[]>(() => {
-    const saved = safeLocalStorage.getItem('ys_subscribers');
-    return safeJsonParse<Subscriber[]>(saved, INITIAL_SUBSCRIBERS);
-  });
-
-  const [settings, setSettings] = useState<WebsiteSettings>(() => {
-    const saved = safeLocalStorage.getItem('ys_settings');
-    return safeJsonParse<WebsiteSettings>(saved, INITIAL_SETTINGS);
-  });
-
-  const [socialLinks, setSocialLinks] = useState<SocialMediaLinks>(() => {
-    const saved = safeLocalStorage.getItem('ys_social');
-    return safeJsonParse<SocialMediaLinks>(saved, INITIAL_SOCIAL_LINKS);
-  });
-
-  const [courierSettings, setCourierSettings] = useState<CourierSettings>(() => {
-    const saved = safeLocalStorage.getItem('ys_courier');
-    return safeJsonParse<CourierSettings>(saved, INITIAL_COURIER_SETTINGS);
-  });
-
-  const [paymentNumbers, setPaymentNumbers] = useState<PaymentNumbers>(() => {
-    const saved = safeLocalStorage.getItem('ys_payments');
-    return safeJsonParse<PaymentNumbers>(saved, INITIAL_PAYMENT_NUMBERS);
-  });
-
-  const [visitorStats, setVisitorStats] = useState<VisitorStats>(() => {
-    const saved = safeLocalStorage.getItem('ys_visitors');
-    return safeJsonParse<VisitorStats>(saved, INITIAL_VISITOR_STATS);
-  });
-
-  const [currentUser, setCurrentUser] = useState<UserProfile>(() => {
-    const saved = safeLocalStorage.getItem('ys_user');
-    return safeJsonParse<UserProfile>(saved, { name: '', email: '', phone: '', address: '', district: '', isLoggedIn: false });
-  });
-
-  const [registeredUsers, setRegisteredUsers] = useState<UserProfile[]>(() => {
-    const saved = safeLocalStorage.getItem('ys_registered_users');
-    return safeJsonParse<UserProfile[]>(saved, []);
-  });
+  // --- Load Initial States from Firestore (no more localStorage limit errors!) ---
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(['Trending', 'Shirt', 'T-Shirt', 'All Product']);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [settings, setSettings] = useState<WebsiteSettings>(INITIAL_SETTINGS);
+  const [socialLinks, setSocialLinks] = useState<SocialMediaLinks>(INITIAL_SOCIAL_LINKS);
+  const [courierSettings, setCourierSettings] = useState<CourierSettings>(INITIAL_COURIER_SETTINGS);
+  const [paymentNumbers, setPaymentNumbers] = useState<PaymentNumbers>(INITIAL_PAYMENT_NUMBERS);
+  const [visitorStats, setVisitorStats] = useState<VisitorStats>(INITIAL_VISITOR_STATS);
+  const [currentUser, setCurrentUser] = useState<UserProfile>({ name: '', email: '', phone: '', address: '', district: '', isLoggedIn: false });
+  const [registeredUsers, setRegisteredUsers] = useState<UserProfile[]>([]);
 
   // --- Session UI States ---
   const [cart, setCart] = useState<{ product: Product; quantity: number; size: string; color: string }[]>([]);
@@ -198,19 +152,62 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All Product');
 
-  // --- Sync to LocalStorage whenever states modify ---
-  useEffect(() => { safeLocalStorage.setItem('ys_products', JSON.stringify(products)); }, [products]);
-  useEffect(() => { safeLocalStorage.setItem('ys_categories', JSON.stringify(categories)); }, [categories]);
-  useEffect(() => { safeLocalStorage.setItem('ys_orders', JSON.stringify(orders)); }, [orders]);
-  useEffect(() => { safeLocalStorage.setItem('ys_coupons', JSON.stringify(coupons)); }, [coupons]);
-  useEffect(() => { safeLocalStorage.setItem('ys_subscribers', JSON.stringify(subscribers)); }, [subscribers]);
-  useEffect(() => { safeLocalStorage.setItem('ys_settings', JSON.stringify(settings)); }, [settings]);
-  useEffect(() => { safeLocalStorage.setItem('ys_social', JSON.stringify(socialLinks)); }, [socialLinks]);
-  useEffect(() => { safeLocalStorage.setItem('ys_courier', JSON.stringify(courierSettings)); }, [courierSettings]);
-  useEffect(() => { safeLocalStorage.setItem('ys_payments', JSON.stringify(paymentNumbers)); }, [paymentNumbers]);
-  useEffect(() => { safeLocalStorage.setItem('ys_visitors', JSON.stringify(visitorStats)); }, [visitorStats]);
-  useEffect(() => { safeLocalStorage.setItem('ys_user', JSON.stringify(currentUser)); }, [currentUser]);
-  useEffect(() => { safeLocalStorage.setItem('ys_registered_users', JSON.stringify(registeredUsers)); }, [registeredUsers]);
+  // --- Listen to Firebase Authentication State ---
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const emailVal = firebaseUser.email ? firebaseUser.email.toLowerCase() : '';
+        if (emailVal) {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', emailVal));
+            if (userDoc.exists()) {
+              const data = userDoc.data();
+              setCurrentUser({
+                name: data.name || firebaseUser.displayName || '',
+                email: emailVal,
+                phone: data.phone || '',
+                address: data.address || '',
+                district: data.district || '',
+                avatar: data.avatar || firebaseUser.photoURL || '',
+                loginMethod: data.loginMethod || 'google',
+                password: data.password || '',
+                isLoggedIn: true
+              });
+            } else {
+              // Create user doc if not exists
+              const newUser: UserProfile = {
+                name: firebaseUser.displayName || '',
+                email: emailVal,
+                phone: '',
+                address: '',
+                district: '',
+                avatar: firebaseUser.photoURL || '',
+                loginMethod: 'google',
+                isLoggedIn: true
+              };
+              await setDoc(doc(db, 'users', emailVal), newUser, { merge: true });
+              setCurrentUser(newUser);
+            }
+          } catch (err) {
+            console.error("Error fetching user profile from Firestore:", err);
+            setCurrentUser({
+              name: firebaseUser.displayName || '',
+              email: emailVal,
+              phone: '',
+              address: '',
+              district: '',
+              avatar: firebaseUser.photoURL || '',
+              loginMethod: 'google',
+              isLoggedIn: true
+            });
+          }
+        }
+      } else {
+        setCurrentUser({ name: '', email: '', phone: '', address: '', district: '', isLoggedIn: false });
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   // --- Safe Firestore Writer Wrappers to show beautiful permission/rules error alerts ---
   const safeSetDoc = async (docRef: any, data: any, options?: any, silent = false) => {
