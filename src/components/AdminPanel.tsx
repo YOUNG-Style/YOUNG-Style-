@@ -8,6 +8,8 @@ import { useAppState } from '../AppContext';
 import { GARMENT_COLORS, BANGLADESH_DISTRICTS } from '../initialData';
 import { Product, Coupon, Subscriber, Order, UserProfile } from '../types';
 import { db, doc, getDoc, storage } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { db, doc, getDoc, storage } from '../firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 interface AdminPanelProps {
@@ -539,7 +541,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   };
 
   // Save new/edited product
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pName || (hasSizes && pSizes.length === 0) || pColors.length === 0) {
       alert('Please fill product Name, size (if enabled), and color!');
@@ -571,7 +573,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       });
       alert('Product updated successfully!');
     } else {
+        await addDoc(
+    collection(db, "products"),
+    payload
+  );
+      
       addProduct(payload);
+      
       alert('New Product added successfully!');
     }
 
@@ -608,7 +616,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
   const handleDeleteProduct = (id: string) => {
     if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-      deleteProduct(id);
+      deleteDoc()
     }
   };
 
