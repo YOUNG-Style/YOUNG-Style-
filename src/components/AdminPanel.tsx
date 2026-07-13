@@ -10,7 +10,6 @@ import { Product, Coupon, Subscriber, Order, UserProfile } from '../types';
 import { db, doc, getDoc, storage } from '../firebase';
 import { collection, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { deleteDoc } from "firebase/firestore";
 
 interface AdminPanelProps {
   isOpen: boolean;
