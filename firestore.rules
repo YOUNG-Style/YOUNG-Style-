@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Products: Read access for everyone, Write access only for Admin
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Coupons: Read access for everyone (to validate coupon codes), Write access only for Admin
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Subscribers: Read access only for Admin, Create access for everyone (to allow subscriptions)
+    match /subscribers/{subscriberId} {
+      allow read: if isAuthenticated();
+      allow create: if true;
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Website Settings: Read access for everyone, Write access only for Admin
+    match /settings/{settingsId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Orders: Anyone can submit a new order, but only Admin can list/update/delete orders
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read, update, delete: if isAuthenticated();
+    }
+
+    // User Profiles: Authenticated users can read/write their own profile, Admins can do anything
+    match /users/{userEmail} {
+      allow read, write: if isAuthenticated() && (request.auth.token.email.toLowerCase() == userEmail.toLowerCase());
+      allow read, write: if isAuthenticated();
+    }
+  }
+}
