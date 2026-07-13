@@ -8,7 +8,7 @@ import { useAppState } from '../AppContext';
 import { GARMENT_COLORS, BANGLADESH_DISTRICTS } from '../initialData';
 import { Product, Coupon, Subscriber, Order, UserProfile } from '../types';
 import { db, doc, getDoc, storage } from '../firebase';
-import { collection, addDoc, updateDoc from "firebase/firestore";
+import { collection, addDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { deleteDoc } from "firebase/firestore";
 
