@@ -619,12 +619,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     setShowAddProductForm(true);
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
      if (confirm('Are you sure you want to delete this product?')) {
-    await deleteDoc(doc(db, "products", id));
+    const productRef = doc(db, "products", id);
+
+    await deleteDoc(productRef);
+
     deleteProduct(id);
-   }
- };
+  }
+};
 
   // Coupons
   const handleSaveCoupon = (e: React.FormEvent) => {
