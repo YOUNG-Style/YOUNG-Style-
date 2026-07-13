@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Order, Coupon, Subscriber, WebsiteSettings, SocialMediaLinks, VisitorStats, CourierSettings, PaymentNumbers, UserProfile } from './types';
+import { db } from './firebase';
+import { collection, doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
 import { 
   INITIAL_PRODUCTS, 
   INITIAL_COUPONS, 
@@ -205,13 +207,180 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => { safeLocalStorage.setItem('ys_user', JSON.stringify(currentUser)); }, [currentUser]);
   useEffect(() => { safeLocalStorage.setItem('ys_registered_users', JSON.stringify(registeredUsers)); }, [registeredUsers]);
 
+  // --- Real-time Firestore Sync ---
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
+      const list: Product[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() } as Product);
+      });
+      if (list.length > 0) {
+        setProducts(list);
+      } else {
+        // First load seeding
+        INITIAL_PRODUCTS.forEach(p => {
+          setDoc(doc(db, 'products', p.id), p).catch(console.error);
+        });
+      }
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'categories'), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data && data.list) {
+          setCategories(data.list);
+        }
+      } else {
+        setDoc(doc(db, 'settings', 'categories'), { list: ['Trending', 'Shirt', 'T-Shirt', 'All Product'] }).catch(console.error);
+      }
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'orders'), (snapshot) => {
+      const list: Order[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() } as Order);
+      });
+      list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setOrders(list);
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'coupons'), (snapshot) => {
+      const list: Coupon[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() } as Coupon);
+      });
+      if (list.length > 0) {
+        setCoupons(list);
+      } else {
+        INITIAL_COUPONS.forEach(c => {
+          setDoc(doc(db, 'coupons', c.id), c).catch(console.error);
+        });
+      }
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'subscribers'), (snapshot) => {
+      const list: Subscriber[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() } as Subscriber);
+      });
+      if (list.length > 0) {
+        setSubscribers(list);
+      } else {
+        INITIAL_SUBSCRIBERS.forEach(s => {
+          setDoc(doc(db, 'subscribers', s.id), s).catch(console.error);
+        });
+      }
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'website'), (snapshot) => {
+      if (snapshot.exists()) {
+        setSettings(snapshot.data() as WebsiteSettings);
+      } else {
+        setDoc(doc(db, 'settings', 'website'), INITIAL_SETTINGS).catch(console.error);
+      }
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'social'), (snapshot) => {
+      if (snapshot.exists()) {
+        setSocialLinks(snapshot.data() as SocialMediaLinks);
+      } else {
+        setDoc(doc(db, 'settings', 'social'), INITIAL_SOCIAL_LINKS).catch(console.error);
+      }
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'courier'), (snapshot) => {
+      if (snapshot.exists()) {
+        setCourierSettings(snapshot.data() as CourierSettings);
+      } else {
+        setDoc(doc(db, 'settings', 'courier'), INITIAL_COURIER_SETTINGS).catch(console.error);
+      }
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'payments'), (snapshot) => {
+      if (snapshot.exists()) {
+        setPaymentNumbers(snapshot.data() as PaymentNumbers);
+      } else {
+        setDoc(doc(db, 'settings', 'payments'), INITIAL_PAYMENT_NUMBERS).catch(console.error);
+      }
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'visitorStats'), (snapshot) => {
+      if (snapshot.exists()) {
+        setVisitorStats(snapshot.data() as VisitorStats);
+      } else {
+        setDoc(doc(db, 'settings', 'visitorStats'), INITIAL_VISITOR_STATS).catch(console.error);
+      }
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const list: UserProfile[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ email: doc.id, ...doc.data() } as UserProfile);
+      });
+      setRegisteredUsers(list);
+    }, (error) => {
+      console.error("Firestore read error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
   // --- Visitor counter tracking ---
   const trackNewVisit = (region?: string) => {
     const defaultRegion = region || 'Dhaka';
     setVisitorStats(prev => {
       const updatedRegions = { ...prev.visitsByRegion };
       updatedRegions[defaultRegion] = (updatedRegions[defaultRegion] || 0) + 1;
-      return {
+      const updated = {
         ...prev,
         todayCount: prev.todayCount + 1,
         weeklyCount: prev.weeklyCount + 1,
@@ -219,6 +388,8 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         totalCount: prev.totalCount + 1,
         visitsByRegion: updatedRegions
       };
+      setDoc(doc(db, 'settings', 'visitorStats'), updated).catch(console.error);
+      return updated;
     });
   };
 
@@ -245,14 +416,17 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       ratings: p.ratings || [5] // initial rating if not specified
     };
     setProducts(prev => [newProduct, ...prev]);
+    setDoc(doc(db, 'products', id), newProduct).catch(console.error);
   };
 
   const updateProduct = (p: Product) => {
     setProducts(prev => prev.map(item => item.id === p.id ? p : item));
+    setDoc(doc(db, 'products', p.id), p).catch(console.error);
   };
 
   const deleteProduct = (id: string) => {
     setProducts(prev => prev.filter(item => item.id !== id));
+    deleteDoc(doc(db, 'products', id)).catch(console.error);
   };
 
   const addOrder = (orderData: {
@@ -281,6 +455,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     
     // Update orders list
     setOrders(prev => [newOrder, ...prev]);
+    setDoc(doc(db, 'orders', newOrder.id), newOrder).catch(console.error);
 
     // Subtract stock quantities
     setProducts(prevProducts => {
@@ -289,7 +464,9 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (item) {
           const updatedQty = Math.max(0, p.quantity - item.quantity);
           const updatedSold = p.sold + item.quantity;
-          return { ...p, quantity: updatedQty, sold: updatedSold };
+          const updatedP = { ...p, quantity: updatedQty, sold: updatedSold };
+          setDoc(doc(db, 'products', p.id), updatedP).catch(console.error);
+          return updatedP;
         }
         return p;
       });
@@ -299,16 +476,26 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const updateOrderStatus = (orderId: string, newStatus: 'Confirmed' | 'Rejected') => {
-    setOrders(prev => prev.map(ord => ord.id === orderId ? { ...ord, status: newStatus } : ord));
+    setOrders(prev => prev.map(ord => {
+      if (ord.id === orderId) {
+        const updatedOrd = { ...ord, status: newStatus };
+        setDoc(doc(db, 'orders', orderId), updatedOrd).catch(console.error);
+        return updatedOrd;
+      }
+      return ord;
+    }));
   };
 
   const addCoupon = (c: Omit<Coupon, 'id'>) => {
     const id = `C-${Date.now()}`;
-    setCoupons(prev => [...prev, { ...c, id }]);
+    const newCoupon = { ...c, id };
+    setCoupons(prev => [...prev, newCoupon]);
+    setDoc(doc(db, 'coupons', id), newCoupon).catch(console.error);
   };
 
   const deleteCoupon = (id: string) => {
     setCoupons(prev => prev.filter(c => c.id !== id));
+    deleteDoc(doc(db, 'coupons', id)).catch(console.error);
   };
 
   const addSubscriber = (email: string): boolean => {
@@ -331,27 +518,33 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       createdAt: new Date().toISOString()
     };
     setSubscribers(prev => [newSub, ...prev]);
+    setDoc(doc(db, 'subscribers', newSub.id), newSub).catch(console.error);
     return true;
   };
 
   const deleteSubscriber = (id: string) => {
     setSubscribers(prev => prev.filter(s => s.id !== id));
+    deleteDoc(doc(db, 'subscribers', id)).catch(console.error);
   };
 
   const updateSettings = (s: WebsiteSettings) => {
     setSettings(s);
+    setDoc(doc(db, 'settings', 'website'), s).catch(console.error);
   };
 
   const updateSocialLinks = (l: SocialMediaLinks) => {
     setSocialLinks(l);
+    setDoc(doc(db, 'settings', 'social'), l).catch(console.error);
   };
 
   const updateCourierSettings = (c: CourierSettings) => {
     setCourierSettings(c);
+    setDoc(doc(db, 'settings', 'courier'), c).catch(console.error);
   };
 
   const updatePaymentNumbers = (p: PaymentNumbers) => {
     setPaymentNumbers(p);
+    setDoc(doc(db, 'settings', 'payments'), p).catch(console.error);
   };
 
   const updateUserProfile = (u: Partial<UserProfile>) => {
@@ -388,13 +581,21 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
         return s;
       }));
+
+      if (updated.email) {
+        const userKey = updated.email.toLowerCase();
+        setDoc(doc(db, 'users', userKey), updated, { merge: true }).catch(console.error);
+      }
+
       return updated;
     });
   };
 
   const addCategory = (cat: string) => {
     if (!categories.includes(cat)) {
-      setCategories(prev => [...prev, cat]);
+      const updatedCategories = [...categories, cat];
+      setCategories(updatedCategories);
+      setDoc(doc(db, 'settings', 'categories'), { list: updatedCategories }).catch(console.error);
     }
   };
 
