@@ -8,9 +8,9 @@ import { useAppState } from '../AppContext';
 import { GARMENT_COLORS, BANGLADESH_DISTRICTS } from '../initialData';
 import { Product, Coupon, Subscriber, Order, UserProfile } from '../types';
 import { db, doc, getDoc, storage } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
-import { db, doc, getDoc, storage } from '../firebase';
+import { collection, addDoc, updateDoc from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { deleteDoc } from "firebase/firestore";
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -567,6 +567,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     };
 
     if (isEditingProduct) {
+      const productRef doc(db, "products", isEditingProduct.id);
+      
+    await updateDoc (productRef, {
+          ...payload
+    });
       updateProduct({
         ...isEditingProduct,
         ...payload
@@ -615,10 +620,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   };
 
   const handleDeleteProduct = (id: string) => {
-    if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-      deleteDoc()
-    }
-  };
+     if (confirm('Are you sure you want to delete this product?')) {
+    await deleteDoc(doc(db, "products", id));
+    deleteProduct(id);
+   }
+ };
 
   // Coupons
   const handleSaveCoupon = (e: React.FormEvent) => {
