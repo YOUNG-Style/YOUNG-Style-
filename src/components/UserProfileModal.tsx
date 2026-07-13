@@ -458,6 +458,7 @@ const user = userCredential.user;
       } else {
         setAuthError(`গুগল লগইন সম্পন্ন করা যায়নি বা ব্রাউজারে পপআপ ব্লক রয়েছে। (${err.message || err.code || err})`);
       }
+      }
     } finally {
       setLoading(false);
     }
