@@ -8,7 +8,13 @@ import { useAppState } from '../AppContext';
 import { GARMENT_COLORS, BANGLADESH_DISTRICTS } from '../initialData';
 import { Product, Coupon, Subscriber, Order, UserProfile } from '../types';
 import { db, doc, getDoc, storage } from '../firebase';
-import { collection, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc
+} from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 interface AdminPanelProps {
@@ -566,7 +572,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     };
 
     if (isEditingProduct) {
-      const productRef = doc(db, "products", isEditingProduct.id);
+      const productRef = doc(
+  db,
+  "products",
+  isEditingProduct.id
+);
       
     await updateDoc (productRef, {
           ...payload
