@@ -7,7 +7,8 @@ import {
 import { useAppState } from '../AppContext';
 import { GARMENT_COLORS, BANGLADESH_DISTRICTS } from '../initialData';
 import { Product, Coupon, Subscriber, Order, UserProfile } from '../types';
-import { db, doc, getDoc } from '../firebase';
+import { db, doc, getDoc, storage } from '../firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -76,6 +77,58 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [pDesc, setPDesc] = useState('');
   const [pImages, setPImages] = useState<string[]>([]);
   const [pRating, setPRating] = useState<number>(5);
+
+  // Upload to Firebase Storage states
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+
+  const uploadToFirebaseStorage = (file: File, folderName: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      // Limit file size to 50MB
+      const maxSizeBytes = 50 * 1024 * 1024;
+      if (file.size > maxSizeBytes) {
+        alert(`File size exceeds 50MB limit! (${(file.size / (1024 * 1024)).toFixed(1)}MB)`);
+        reject(new Error("File too large"));
+        return;
+      }
+
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      // Create unique file path in storage
+      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+      const storagePath = `${folderName}/${Date.now()}_${cleanFileName}`;
+      const storageRef = ref(storage, storagePath);
+
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          setUploadProgress(progress);
+        },
+        (error) => {
+          console.error("Storage upload error:", error);
+          alert(`Upload failed: ${error.message}`);
+          setIsUploading(false);
+          reject(error);
+        },
+        async () => {
+          try {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            setIsUploading(false);
+            setUploadProgress(100);
+            resolve(downloadUrl);
+          } catch (urlErr: any) {
+            console.error("Error getting download URL:", urlErr);
+            setIsUploading(false);
+            reject(urlErr);
+          }
+        }
+      );
+    });
+  };
 
   // Add Coupon form
   const [cpCode, setCpCode] = useState('');
@@ -458,20 +511,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // Image Upload base64 convert
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Image Upload directly to Firebase Storage
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file: any) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          setPImages(prev => [...prev, reader.result as string]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    const urls: string[] = [];
+    try {
+      const fileList = Array.from(files) as File[];
+      let count = 0;
+      for (const file of fileList) {
+        const url = await uploadToFirebaseStorage(file, 'products');
+        urls.push(url);
+        count++;
+        setUploadProgress(Math.round((count / fileList.length) * 100));
+      }
+      setPImages(prev => [...prev, ...urls]);
+    } catch (err) {
+      console.error("Failed to upload product images:", err);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(100);
+    }
   };
 
   // Save new/edited product
@@ -630,33 +694,44 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     alert('Admin Merchant Payment numbers updated!');
   };
 
-  // Logo file upload helper
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Logo file upload helper directly to Firebase Storage
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setLogoInput(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      const url = await uploadToFirebaseStorage(file, 'settings');
+      setLogoInput(url);
+    } catch (err) {
+      console.error("Failed to upload logo:", err);
+    }
   };
 
-  // Banner slide file upload
-  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Banner slide file upload directly to Firebase Storage
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file: any) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          setBannerInputs(prev => [...prev, reader.result]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    const urls: string[] = [];
+    try {
+      const fileList = Array.from(files) as File[];
+      let count = 0;
+      for (const file of fileList) {
+        const url = await uploadToFirebaseStorage(file, 'banners');
+        urls.push(url);
+        count++;
+        setUploadProgress(Math.round((count / fileList.length) * 100));
+      }
+      setBannerInputs(prev => [...prev, ...urls]);
+    } catch (err) {
+      console.error("Failed to upload banner images:", err);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(100);
+    }
   };
 
   // Order Accept / Reject triggering
@@ -1460,7 +1535,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                           </div>
                         </div>
 
-                        {/* Image Device connects direct base64 upload */}
+                        {/* Image Device connects direct storage upload */}
                         <div>
                           <label className="text-[11px] font-bold text-gray-600 block mb-1">Upload Product Images (From Device)</label>
                           <input 
@@ -1468,13 +1543,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                             multiple
                             accept="image/*"
                             onChange={handleImageUpload}
+                            disabled={isUploading}
                             className="w-full bg-white px-2 py-1 text-xs border border-gray-200 rounded-lg"
                           />
-                          <p className="text-[9px] text-gray-400 mt-0.5">Choose multiple images.</p>
+                          {isUploading && (
+                            <div className="mt-1">
+                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div 
+                                  className="bg-[#1877F2] h-1.5 rounded-full transition-all duration-300" 
+                                  style={{ width: `${uploadProgress}%` }}
+                                />
+                              </div>
+                              <span className="text-[10px] text-gray-500 font-semibold mt-0.5 block">Uploading: {uploadProgress}%</span>
+                            </div>
+                          )}
+                          <p className="text-[9px] text-gray-400 mt-0.5">Choose multiple images (Max 50MB each).</p>
                         </div>
                       </div>
 
-                      {/* Display Uploaded base64 images */}
+                      {/* Display Uploaded images */}
                       {pImages.length > 0 && (
                         <div className="flex gap-2 flex-wrap bg-white p-2 border border-gray-200 rounded-lg">
                           {pImages.map((img, i) => (
@@ -1506,9 +1593,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
                       <button
                         type="submit"
-                        className="w-full py-2.5 bg-[#1877F2] text-white text-xs font-black rounded-lg hover:bg-blue-600 uppercase"
+                        disabled={isUploading}
+                        className={`w-full py-2.5 text-white text-xs font-black rounded-lg uppercase transition-all ${
+                          isUploading 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : 'bg-[#1877F2] hover:bg-blue-600'
+                        }`}
                       >
-                        Save Product Data
+                        {isUploading ? `Uploading Images (${uploadProgress}%)...` : 'Save Product Data'}
                       </button>
                     </form>
                   )}
@@ -1823,8 +1915,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                       type="file"
                       accept="image/*"
                       onChange={handleLogoUpload}
+                      disabled={isUploading}
                       className="w-full bg-slate-50 px-2 py-1.5 text-xs border border-gray-200 rounded-lg"
                     />
+                    {isUploading && (
+                      <div className="mt-1">
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className="bg-[#1877F2] h-1.5 rounded-full transition-all duration-300" 
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-gray-500 font-semibold mt-0.5 block">Uploading: {uploadProgress}%</span>
+                      </div>
+                    )}
                     {logoInput && (
                       <div className="mt-2 flex items-center gap-2">
                         <img src={logoInput} alt="Preview" className="h-8 w-8 rounded-full object-cover border border-[#1877F2]/20" />
@@ -1841,8 +1945,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                       multiple
                       accept="image/*"
                       onChange={handleBannerUpload}
+                      disabled={isUploading}
                       className="w-full bg-slate-50 px-2 py-1.5 text-xs border border-gray-200 rounded-lg"
                     />
+                    {isUploading && (
+                      <div className="mt-1">
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className="bg-[#1877F2] h-1.5 rounded-full transition-all duration-300" 
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-gray-500 font-semibold mt-0.5 block">Uploading: {uploadProgress}%</span>
+                      </div>
+                    )}
                     <div className="flex gap-2 flex-wrap mt-2">
                       {bannerInputs.map((b, i) => (
                         <div key={i} className="relative h-12 w-20 rounded-md overflow-hidden border border-gray-200">
@@ -1928,9 +2044,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-[#1877F2] hover:bg-blue-600 text-white text-xs font-black rounded-lg uppercase"
+                    disabled={isUploading}
+                    className={`w-full py-2.5 text-white text-xs font-black rounded-lg uppercase transition-all ${
+                      isUploading 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-[#1877F2] hover:bg-blue-600'
+                    }`}
                   >
-                    Save Settings
+                    {isUploading ? `Uploading Images (${uploadProgress}%)...` : 'Save Settings'}
                   </button>
                 </form>
 
