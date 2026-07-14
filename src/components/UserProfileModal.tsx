@@ -700,6 +700,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
   const handleLogout = async () => {
     setLoading(true);
     try {
+      localStorage.removeItem('ys_user');
+    } catch (e) {
+      console.warn('localStorage is not available:', e);
+    }
+    try {
       await signOut(auth);
     } catch (e) {
       console.error('Firebase signout error:', e);
