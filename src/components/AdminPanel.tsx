@@ -586,11 +586,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
         ...payload
       });
       alert('Product updated successfully!');
+    
     } else {
+      
         const docRef = await addDoc(
-  collection(db, "products"),
-  payload
-);
+          collection(db, "products"),
+          payload
+    );
       
       addProduct(payload);
       
@@ -629,7 +631,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   };
 
   const handleDeleteProduct = async (id: string) => {
-     if (confirm('Are you sure you want to delete this product?')) {
+     if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
        
     const productRef = doc(db, "products", id);
 
