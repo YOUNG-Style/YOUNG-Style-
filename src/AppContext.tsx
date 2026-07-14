@@ -64,6 +64,26 @@ const safeJsonParse = <T,>(value: string | null, fallback: T): T => {
   }
 };
 
+// Helper to get deterministic user document key for Firestore
+const getUserDocKey = (user: any): string => {
+  if (!user) return '';
+  if (user.loginMethod === 'phone' || (!user.loginMethod && user.phone && !user.email)) {
+    const phoneVal = user.phone || '';
+    const cleanPhone = phoneVal.replace(/\D/g, '');
+    let finalPhone = cleanPhone;
+    if (cleanPhone.startsWith('880') && cleanPhone.length > 10) {
+      finalPhone = cleanPhone.substring(3);
+    } else if (cleanPhone.startsWith('0') && cleanPhone.length > 10) {
+      finalPhone = cleanPhone.substring(1);
+    }
+    if (!finalPhone.startsWith('0')) {
+      finalPhone = '0' + finalPhone;
+    }
+    return `phone_${finalPhone}@youngstyle.com`;
+  }
+  return user.email ? user.email.toLowerCase() : '';
+};
+
 interface AppContextType {
   products: Product[];
   categories: string[];
@@ -142,7 +162,10 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [courierSettings, setCourierSettings] = useState<CourierSettings>(INITIAL_COURIER_SETTINGS);
   const [paymentNumbers, setPaymentNumbers] = useState<PaymentNumbers>(INITIAL_PAYMENT_NUMBERS);
   const [visitorStats, setVisitorStats] = useState<VisitorStats>(INITIAL_VISITOR_STATS);
-  const [currentUser, setCurrentUser] = useState<UserProfile>({ name: '', email: '', phone: '', address: '', district: '', isLoggedIn: false });
+  const [currentUser, setCurrentUser] = useState<UserProfile>(() => {
+    const saved = safeLocalStorage.getItem('ys_user');
+    return safeJsonParse<UserProfile>(saved, { name: '', email: '', phone: '', address: '', district: '', isLoggedIn: false });
+  });
   const [registeredUsers, setRegisteredUsers] = useState<UserProfile[]>([]);
 
   // --- Session UI States ---
@@ -151,6 +174,19 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All Product');
+
+  // --- Synchronize Current User with Safe LocalStorage ---
+  useEffect(() => {
+    if (currentUser && currentUser.isLoggedIn) {
+      safeLocalStorage.setItem('ys_user', JSON.stringify(currentUser));
+    } else {
+      try {
+        localStorage.removeItem('ys_user');
+      } catch (e) {
+        console.warn('localStorage is not available:', e);
+      }
+    }
+  }, [currentUser]);
 
   // --- Listen to Firebase Authentication State ---
   useEffect(() => {
@@ -164,7 +200,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               const data = userDoc.data();
               setCurrentUser({
                 name: data.name || firebaseUser.displayName || '',
-                email: emailVal,
+                email: data.email || emailVal,
                 phone: data.phone || '',
                 address: data.address || '',
                 district: data.district || '',
@@ -203,7 +239,14 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }
         }
       } else {
-        setCurrentUser({ name: '', email: '', phone: '', address: '', district: '', isLoggedIn: false });
+        // Fallback to local storage user if firebase user is not found, to keep them logged in across iframe refresh
+        const saved = safeLocalStorage.getItem('ys_user');
+        const localUser = safeJsonParse<UserProfile>(saved, { name: '', email: '', phone: '', address: '', district: '', isLoggedIn: false });
+        if (localUser.isLoggedIn) {
+          setCurrentUser(localUser);
+        } else {
+          setCurrentUser({ name: '', email: '', phone: '', address: '', district: '', isLoggedIn: false });
+        }
       }
     });
     return () => unsubscribe();
@@ -695,8 +738,8 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return s;
       }));
 
-      if (updated.email) {
-        const userKey = updated.email.toLowerCase();
+      const userKey = getUserDocKey(updated);
+      if (userKey) {
         safeSetDoc(doc(db, 'users', userKey), updated, { merge: true });
       }
 
