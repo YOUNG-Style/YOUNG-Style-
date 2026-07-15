@@ -89,53 +89,50 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
 
-  const uploadToFirebaseStorage = (file: File, folderName: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      // Limit file size to 50MB
-      const maxSizeBytes = 50 * 1024 * 1024;
-      if (file.size > maxSizeBytes) {
-        alert(`File size exceeds 50MB limit! (${(file.size / (1024 * 1024)).toFixed(1)}MB)`);
-        reject(new Error("File too large"));
-        return;
-      }
+  // Firebase Storage-এর বদলে নতুন ImgBB আপলোড ফাংশন
+const uploadToFirebaseStorage = async (file: File, folderName: string): Promise<string> => {
+  // আপনার ImgBB API Key নিচে সিঙ্গেল কোটেশনের ('') মাঝে বসাবেন
+  const IMGBB_API_KEY = 'এখানে_আপনার_IMGBB_API_KEY_বসাবেন'; 
 
-      setIsUploading(true);
-      setUploadProgress(0);
+  // ফাইলের সাইজ লিমিট ৫০ এমবি করা আছে
+  const maxSizeBytes = 50 * 1024 * 1024;
+  if (file.size > maxSizeBytes) {
+    alert(`ফাইলের সাইজ ৫০ এমবির চেয়ে বেশি হতে পারবে না!`);
+    throw new Error("File too large");
+  }
 
-      // Create unique file path in storage
-      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-      const storagePath = `${folderName}/${Date.now()}_${cleanFileName}`;
-      const storageRef = ref(storage, storagePath);
+  setIsUploading(true);
+  setUploadProgress(10); // আপলোড প্রোগ্রেস বার দেখানোর জন্য
 
-      const uploadTask = uploadBytesResumable(storageRef, file);
+  const formData = new FormData();
+  formData.append('image', file);
 
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          setUploadProgress(progress);
-        },
-        (error) => {
-          console.error("Storage upload error:", error);
-          alert(`Upload failed: ${error.message}`);
-          setIsUploading(false);
-          reject(error);
-        },
-        async () => {
-          try {
-            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-            setIsUploading(false);
-            setUploadProgress(100);
-            resolve(downloadUrl);
-          } catch (urlErr: any) {
-            console.error("Error getting download URL:", urlErr);
-            setIsUploading(false);
-            reject(urlErr);
-          }
-        }
-      );
+  try {
+    setUploadProgress(50); // ৫০% প্রোগ্রেস
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: 'POST',
+      body: formData
     });
-  };
+
+    if (!response.ok) {
+      throw new Error('ImgBB upload failed');
+    }
+
+    const data = await response.json();
+    setUploadProgress(100); // সম্পূর্ণ ১০০% প্রোগ্রেস
+    setIsUploading(false);
+
+    // এটি ImgBB থেকে ছবির ডিরেক্ট URL বা লিঙ্কটি রিটার্ন করবে
+    return data.data.url; 
+
+  } catch (error: any) {
+    console.error("ImgBB Upload error:", error);
+    alert(`ছবি আপলোড করা যায়নি: ${error.message}`);
+    setIsUploading(false);
+    throw error;
+  }
+};
+  
 
   // Add Coupon form
   const [cpCode, setCpCode] = useState('');
