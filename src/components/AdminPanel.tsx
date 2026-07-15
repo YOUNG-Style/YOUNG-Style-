@@ -91,8 +91,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
   // Firebase Storage-এর বদলে নতুন ImgBB আপলোড ফাংশন
 const uploadToFirebaseStorage = async (file: File, folderName: string): Promise<string> => {
-  // আপনার ImgBB API Key নিচে সিঙ্গেল কোটেশনের ('') মাঝে বসাবেন
-  const IMGBB_API_KEY = 'এখানে_আপনার_IMGBB_API_KEY_বসাবেন'; 
+  const IMGBB_API_KEY = '57f5e21615bc26316a40818f93719f19';
+  
 
   // ফাইলের সাইজ লিমিট ৫০ এমবি করা আছে
   const maxSizeBytes = 50 * 1024 * 1024;
