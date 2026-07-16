@@ -229,8 +229,9 @@ export const INITIAL_SETTINGS: WebsiteSettings = {
   bannerBadge: 'New Summer Arrivals',
   bannerTitle: 'YOUNG STYLE CO.',
   bannerDescription: '100% Quality-Full Premium Shirts & T-Shirts for youngsters. Get discounts up to 50% using special coupon codes.'
-};
-
+  popupAdImage: '',
+  showPopupAd: false
+  };
 
 export const INITIAL_SOCIAL_LINKS: SocialMediaLinks = {
   facebook: 'https://facebook.com/youngstyle.official',
