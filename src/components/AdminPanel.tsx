@@ -66,7 +66,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [otpError, setOtpError] = useState('');
 
   // Admin Active Tab
-  type AdminTab = 'dashboard' | 'orders' | 'products' | 'coupons' | 'subscribers' | 'settings' | 'social' | 'courier' | 'payments';
+  type AdminTab = 'dashboard' | 'orders' | 'products' | 'coupons' | 'subscribers' | 'settings' | 'social' | 'courier' | 'payments' | 'ads';
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
 
   // Add/Edit Product state
@@ -991,6 +991,8 @@ const uploadToFirebaseStorage = async (file: File, folderName: string): Promise<
                   { id: 'social', label: 'Social Media', icon: Share2 },
                   { id: 'courier', label: 'Courier Service', icon: Truck },
                   { id: 'payments', label: 'Payment Numbers', icon: CreditCard },
+                  { id: 'ads', label: 'Pop-up Ads', icon: Share2 },
+            
                 ].map(tab => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -1031,7 +1033,99 @@ const uploadToFirebaseStorage = async (file: File, folderName: string): Promise<
 
             {/* Right Tab Content Viewport */}
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white">
-              
+
+                    {/* 📺 ADS MANAGEMENT TAB */}
+      {activeTab === 'ads' && (
+        <div className="space-y-6 rounded-xl bg-white p-6 shadow-sm border border-gray-100">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">Promotional Pop-up Announcement</h2>
+            <p className="text-xs text-gray-500 mt-1">আপনার কাস্টমাররা ওয়েবসাইটে প্রবেশ করলেই যে আকর্ষণীয় পপ-আপ অফারটি দেখতে পাবে, তা এখান থেকে নিয়ন্ত্রণ করুন।</p>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* 🔘 On/Off Toggle Button */}
+          <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div>
+              <span className="block text-sm font-semibold text-gray-800">Pop-up Advertisement Status</span>
+              <span className="text-xs text-gray-500">
+                {settings.showPopupAd ? 'বর্তমানে পপ-আপ অফারটি কাস্টমারদের দেখানো হচ্ছে' : 'বর্তমানে পপ-আপ অফারটি বন্ধ আছে'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                updateSettings({
+                  ...settings,
+                  showPopupAd: !settings.showPopupAd
+                });
+              }}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold text-white transition active:scale-95 ${
+                settings.showPopupAd ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'
+              }`}
+            >
+              {settings.showPopupAd ? <EyeOff size={16} /> : <Eye size={16} />}
+              {settings.showPopupAd ? 'Deactivate Ad' : 'Activate Ad'}
+            </button>
+          </div>
+
+          {/* 📸 Image Upload & Preview Area */}
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700">Upload Banner Image (ImgBB)</label>
+            
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition relative">
+              <input
+                type="file"
+                accept="image/*"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    const uploadedUrl = await uploadToFirebaseStorage(file, 'promo-ads');
+                    updateSettings({
+                      ...settings,
+                      popupAdImage: uploadedUrl
+                    });
+                    alert('বিজ্ঞাপনের ছবি সফলভাবে আপলোড হয়েছে!');
+                  } catch (err) {
+                    console.error(err);
+                  }
+                }}
+              />
+              <PlusCircle className="text-gray-400 mb-2" size={32} />
+              <span className="text-xs font-medium text-gray-600">ক্লিক করে নতুন অফারের ছবি আপলোড করুন</span>
+              <span className="text-[10px] text-gray-400 mt-1">সর্বোচ্চ ৫০ এমবি (অনুপাত 4:5 রিকমেন্ডেড)</span>
+            </div>
+
+            {/* 🖼️ Live Preview Box */}
+            {settings.popupAdImage && (
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <span className="block text-xs font-semibold text-gray-500 mb-2">Live Preview:</span>
+                <div className="relative max-w-[200px] aspect-[4/5] rounded-lg overflow-hidden border border-gray-300 shadow-md bg-white">
+                  <img 
+                    src={settings.popupAdImage} 
+                    alt="Ad Preview" 
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if(confirm('আপনি কি নিশ্চিত যে এই ছবিটি মুছে ফেলতে চান?')) {
+                        updateSettings({ ...settings, popupAdImage: '' });
+                      }
+                    }}
+                    className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full shadow hover:bg-red-700 transition active:scale-95"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
               {/* TAB 1: DASHBOARD OVERVIEW & VISITOR STATS */}
               {activeTab === 'dashboard' && (
                 <div className="space-y-6">
