@@ -34,6 +34,7 @@ function MainAppContent() {
 
   // Drawers/Modals state
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLiveAd, setShowLiveAd] = useState(true);
   const [cartOpen, setCartOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
@@ -142,9 +143,33 @@ function MainAppContent() {
 
     return matchesCategory && matchesSearch;
   });
-
+  
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans flex flex-col antialiased animate-fade-in">
+            {/* 📢 লাইভ কাস্টমার পপ-আপ বিজ্ঞাপন */}
+      {settings?.showPopupAd && settings?.popupAdImage && showLiveAd && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="relative max-w-[340px] w-full bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
+            
+            {/* 🖼️ অফার ব্যানার ইমেজ */}
+            <img 
+              src={settings.popupAdImage} 
+              alt="Special Promo" 
+              className="w-full h-auto object-cover max-h-[420px]"
+            />
+            
+            {/* ✕ বন্ধ করার বাটন */}
+            <button 
+              type="button"
+              onClick={() => setShowLiveAd(false)}
+              className="absolute top-2.5 right-2.5 bg-black/40 hover:bg-black/70 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition shadow"
+            >
+              ✕
+            </button>
+
+          </div>
+        </div>
+      )}
       
       {/* Animated Top Discount Banner */}
       {settings.discountBannerText && (
