@@ -92,7 +92,10 @@ export interface WebsiteSettings {
   bannerBadge?: string;
   bannerTitle?: string;
   bannerDescription?: string;
+  popupAdImage?: string;
+  showPopupAd?: boolean;
 }
+
 
 export interface SocialMediaLinks {
   facebook: string;
