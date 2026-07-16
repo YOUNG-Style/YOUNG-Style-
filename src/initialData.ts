@@ -222,11 +222,7 @@ export const INITIAL_SETTINGS: WebsiteSettings = {
   phone: '+8801712345678',
   address: 'Savar Bazar Road, Savar, Dhaka - 1340',
   logo: '', // Fallback to icon text if empty
-  banners: [
-    'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=1600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=1600&auto=format&fit=crop&q=80'
-  ],
+  banners: [], // 👈 পুরাতন ৩টি লিংক কেটে এখানে খালি অ্যারে করে দেওয়া হয়েছে
   description: 'Welcome to YOUNG Style. We represent the youth spirit, bringing 100% quality-full premium shirts and t-shirts directly to your doorsteps. Discover your customized sizes, brilliant color ranges, and feel the ultimate fabric comforts crafted strictly for the active and stylish generation.',
   discountBannerText: '🔥 ধামাকা অফার! যেকোনো ৩টি শার্ট অর্ডারে ডেলিভারি চার্জ সম্পূর্ণ ফ্রি! কুপন কোড ব্যবহার করুন: YOUNG10 🔥',
   showSubscribersToCustomers: true,
@@ -234,6 +230,7 @@ export const INITIAL_SETTINGS: WebsiteSettings = {
   bannerTitle: 'YOUNG STYLE CO.',
   bannerDescription: '100% Quality-Full Premium Shirts & T-Shirts for youngsters. Get discounts up to 50% using special coupon codes.'
 };
+
 
 export const INITIAL_SOCIAL_LINKS: SocialMediaLinks = {
   facebook: 'https://facebook.com/youngstyle.official',
