@@ -801,7 +801,9 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         showSubscribersToCustomers: false,
         bannerBadge: '',
         bannerTitle: '',
-        bannerDescription: ''
+        bannerDescription: '',
+        popupAdImage: '',
+        showPopupAd: false
       };
       await safeSetDoc(doc(db, 'settings', 'website'), blankSettings);
       setSettings(blankSettings);
