@@ -228,7 +228,7 @@ export const INITIAL_SETTINGS: WebsiteSettings = {
   showSubscribersToCustomers: true,
   bannerBadge: 'New Summer Arrivals',
   bannerTitle: 'YOUNG STYLE CO.',
-  bannerDescription: '100% Quality-Full Premium Shirts & T-Shirts for youngsters. Get discounts up to 50% using special coupon codes.'
+  bannerDescription: '100% Quality-Full Premium Shirts & T-Shirts for youngsters. Get discounts up to 50% using special coupon codes.',
   popupAdImage: '',
   showPopupAd: false
   };
