@@ -30,6 +30,5 @@ export {
   doc,
   setDoc,
   getDoc,
-  ref,
-  storage
+  ref
 };
