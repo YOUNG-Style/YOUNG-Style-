@@ -3215,6 +3215,60 @@ const uploadToFirebaseStorage = async (file: File, folderName: string): Promise<
                 </form>
               )}
 
+              {/* COURIER SETTINGS SECTION */}
+            {activeTab === 'courier' && (
+  <div className="space-y-6 bg-white p-6 rounded-2xl border border-slate-100 shadow-md">
+    <h4 className="text-sm font-black uppercase tracking-wider flex items-center gap-1.5 text-emerald-600">
+      স্টেডফাস্ট কুরিয়ার পার্টনার নিয়ন্ত্রণগুলি কনফিগার করুন
+    </h4>
+    <div className="space-y-4">
+      <div>
+        <label className="block text-xs font-semibold mb-2">API কী / টোকেন (কপি করা এপিআই টোকেন)</label>
+        <input 
+          type="text" 
+          className="w-full border rounded-lg px-3 py-2 text-sm" 
+          placeholder="এখানে আপনার এপিআই টোকেন পেস্ট করুন"
+          value={courierSettings?.apiKey || ''}
+          onChange={(e) => setCourierSettings({ ...courierSettings, apiKey: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold mb-2">মার্চেন্ট স্টোর আইডি (মার্চেন্ট স্টোর আইডি)</label>
+        <input 
+          type="text" 
+          className="w-full border rounded-lg px-3 py-2 text-sm" 
+          placeholder="2291185"
+          value={courierSettings?.storeId || ''}
+          onChange={(e) => setCourierSettings({ ...courierSettings, storeId: e.target.value })}
+        />
+      </div>
+      <button 
+        type="button" 
+        onClick={async (e) => {
+          e.preventDefault();
+          try {
+            const { doc, setDoc } = await import('firebase/firestore');
+            const { db } = await import('../../firebase');
+            
+            await setDoc(doc(db, 'settings', 'courier'), {
+              apiKey: courierSettings?.apiKey || '',
+              storeId: courierSettings?.storeId || ''
+            }, { merge: true });
+
+            alert('স্টেডফাস্ট কুরিয়ার সেটিংস সফলভাবে সংরক্ষিত হয়েছে!');
+          } catch (error) {
+            console.error(error);
+            alert('সংরক্ষণ করতে সমস্যা হয়েছে, আবার চেষ্টা করুন।');
+          }
+        }}
+        className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700"
+      >
+        সংরক্ষণ এবং সক্রিয় সংযোগ (কানেক্ট ও সক্রিয় করুন)
+      </button>
+    </div>
+  </div>
+)}
+              
               {/* TAB 9: PAYMENT SETTINGS (ADD PAYMENT NUMBERS) */}
               {activeTab === 'payments' && (
                 <div className="space-y-6">
