@@ -498,7 +498,7 @@ const uploadToFirebaseStorage = async (file: File, folderName: string): Promise<
       setGate('panel');
       setAdminAuthenticated(true);
     } else {
-      setOtpError('ভুল ভেরিফিকেশন কোড! কোডটি হলো ১৫৯৯');
+      setOtpError('ভুল ভেরিফিকেশন কোড! আবার চেষ্টা করুন।');
     }
   };
 
