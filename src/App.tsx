@@ -522,7 +522,7 @@ function MainAppContent() {
               />
               
               {passcodeError && (
-                <p className="text-[10px] text-red-500 font-bold">ভুল পাসকোড! অনুগ্রহ করে '8tmI@mr87@' দিন।</p>
+                <p className="text-[10px] text-red-500 font-bold">ভুল পাসকোড! অনুগ্রহ করে সঠিক পাসকোডটি দিয়ে আবার চেষ্টা করুন।</p>
               )}
 
               <div className="flex gap-2">
